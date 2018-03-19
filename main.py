@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import evdev
+import pifacerelayplus
 from evdev import ecodes
+from time import sleep
 
 #Constants
 KEY_PRESSED = 1
@@ -33,6 +35,9 @@ btns_alt = [
     ecodes.KEY_PAGEUP
     ]
 
+DELAY = 3.0
+DELAY_PULSE = 0.25
+
 #OLD: replaced by key from file
 #key = [1, 2, 7, 8]
 
@@ -51,6 +56,8 @@ for device in devices:
 device = evdev.InputDevice('/dev/input/event0')
 print(device)
 
+relay = pifacerelayplus.PiFaceRelayPlus(pifacerelayplus.RELAY)
+
 #Actual reading loop
 print("Reading input")
 for event in device.read_loop():
@@ -62,6 +69,9 @@ for event in device.read_loop():
         elif event.code == ecodes.KEY_KPENTER:
             if (pressed == key_num) or (pressed == key_alt):
                 print("*** CODE OK, DOOR WILL OPEN ***")
+                relay.relays[0].set_high()
+                sleep(DELAY_PULSE)
+                relay.relays[0].set_low()
             else:
                 print("Wrong code entered")
             pressed.clear()
