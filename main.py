@@ -3,10 +3,11 @@ import evdev
 import pifacerelayplus
 from evdev import ecodes
 from time import sleep
-from zenlog import logging
+import logging
+#from zenlog import logging
 
-import ptvsd
-ptvsd.enable_attach("pidoor", address = ('pi-door.local', 3000))
+#import ptvsd
+#ptvsd.enable_attach("pidoor", address = ('pi-door.local', 3000))
 
 # Enable the line of source code below only if you want the application to wait until the debugger has attached to it
 #ptvsd.wait_for_attach()
@@ -86,12 +87,12 @@ for event in device.read_loop():
         elif event.code == ecodes.KEY_KPENTER:
             if (pressed == key_num) or (pressed == key_alt):
                 print("*** CODE OK, DOOR WILL OPEN ***")
-                logging.info('Correct code entered, door opening')
+                logging.info("*** Correct code entered: DOOR OPENING ***")
                 relay.relays[0].set_high()
                 sleep(DELAY_PULSE)
                 relay.relays[0].set_low()
             else:
                 pressed_str = convertButtonsToString(pressed)
                 print("Wrong code entered: " + pressed_str)
-                logging.info('Wrong code entered: %s', pressed_str)
+                logging.info("Wrong code entered: %s", pressed_str)
             pressed.clear()
