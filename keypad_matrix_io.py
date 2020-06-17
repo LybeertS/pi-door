@@ -1,5 +1,6 @@
 #!/usr/bin/python
- 
+#Code copied from rainierez / Chris Crumpacker (https://github.com/rainierez/MatrixKeypad_Python)
+
 import RPi.GPIO as GPIO
  
 class keypad():
