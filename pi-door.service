@@ -1,0 +1,12 @@
+[Unit]
+Description=pi-door python script
+After=multi-user.target
+
+[Service]
+Type=exec
+WorkingDirectory=/home/pi/pi-door
+ExecStart=/usr/bin/python /home/pi/pi-door/main_matrix.py
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
