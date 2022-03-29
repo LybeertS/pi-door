@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 import RPi.GPIO as GPIO
 import keypad_matrix_io
 import pifacerelayplus
