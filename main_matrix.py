@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 import RPi.GPIO as GPIO
 import keypad_matrix_io
+import user_reader
 import pifacerelayplus
-from time import sleep
 import logging
+from time import sleep
 
 #import ptvsd
 #ptvsd.enable_attach("pidoor", address = ('pi-door.local', 3000))
@@ -23,19 +24,18 @@ DELAY_PULSE = 0.25
 pressed = []
 attempts = 0
 
-#OLD: replaced by key from file
-#key = [1, 2, 7, 8]
+#Get users
+reader = user_reader.UserReader('users')
 
-#Get key from file 
-with open('key', 'r') as file:
-    key_str = file.readline().strip()
-    key = [int(i) for i in list(key_str)]
+#with open('key', 'r') as file:
+#    key_str = file.readline().strip()
+#    key = [int(i) for i in list(key_str)]
 
-def convertDigitsToString(buttons):
-    numbers = ""
-    for b in buttons:
-        numbers += str(b)
-    return numbers
+def convert_pressed_to_key(pressed):
+    key = ""
+    for b in pressed:
+        key += str(b)
+    return key
 
 kp = keypad_matrix_io.keypad()
 
@@ -50,24 +50,30 @@ while True:
         #print("Number pressed")
         pressed.append(digit)
     else:
-        if (pressed == key):
-            info = "*** Correct code entered: DOOR OPENING ***"
-            print(info)
-            logging.info(info)
-            relay.relays[0].set_high()
-            sleep(DELAY_PULSE)
-            relay.relays[0].set_low()
+        pressed_key = convert_pressed_to_key(pressed)
+        user = reader.get_user_with_key(pressed_key)
+        if user:
             attempts = 0
+            if reader.check_user_time_valid(user):
+                info = "*** Correct code entered for user \"{}\": DOOR OPENING ***".format(user["name"])
+                print(info)
+                logging.info(info)
+                relay.relays[0].set_high()
+                sleep(DELAY_PULSE)
+                relay.relays[0].set_low()
+            else:
+                info = "Correct code entered for user \"{}\", but invalid time".format(user["name"])
+                print(info)
+                logging.info(info)
         else:
-            pressed_str = convertDigitsToString(pressed)
-            info = "Wrong code entered: " + str(pressed_str)
+            info = "Invalid code entered: " + str(pressed_key)
             print(info)
             logging.info(info)
             attempts += 1
             if attempts >= 5:
-                text = "--- 5 wrong code entered, waiting for 5s ---"
+                text = "--- 5 invalid codes entered, waiting for 60s ---"
                 print(text)
                 logging.info(text)
-                sleep(5)
+                sleep(60)
                 attempts = 0
         pressed.clear()
